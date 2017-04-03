@@ -7,7 +7,7 @@
 		<title>Title Page</title>
 
 		<!-- Bootstrap CSS -->
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+		<link rel="stylesheet" href="bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 
 		<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 		<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -20,47 +20,58 @@
 		
 		<div class="container">
 		<div class="panel panel-default">
-			<div class="panel-body">						  
-				<table class="table table-hover">
-					<thead>
-				  		<tr>
-				  			<th>Command</th>
-				  			<th>Status</th>
-				  			<th>Stdout</th>
-				  			<th>Stderr</th>
-				  		</tr>
-				  	</thead>
-					<% commands.forEach(function(command){ %>
-					  	<tbody>
-					  		<tr>
-					  			<td><%=command.string%></td>
-					  			<td><%=command.status%></td>
-					  			<td><%=command.stdour%></td>
-					  			<td><%=command.stderr%></td>
-					  		</tr>
-					  	</tbody>
-					<% })%>
-			 		<% if(commands.length === 0) { %>
-			 			<tbody>
-			 			<tr><td>No Commands to be executed</td></tr>
-			 			</tbody>
-					<% } %>
-				</table>
-			</div>
-		</div>
-			<div class="panel panel-default">
 				<div class="panel-body">
 					<form action="/add" method="POST" role="form">
 						<legend>Add Command</legend>
 					
-						<div class="form-group">
-							<label for="">Command</label>
-							<textarea class="form-control" name="command"></textarea>
+            <div class="form-group">
+              <label for="">Command</label>
+              <textarea class="form-control" name="command"></textarea>
+            </div>						
+            <div class="form-group">
+							<label for="">timeout in milliseconds (optional)</label>
+							<input type="text" class="form-control" name="timeout"/>
 						</div>
 						<button type="submit" class="btn btn-primary">Add</button>
 					</form>
 				</div>
 			</div>
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<% commands.getAll().forEach(function(command){%>
+					<div class="row">
+						<div class="col-md-7">Command: <pre><%=command.string%></pre></div>
+						<% if(command.status === 'new') {%> <div class="col-md-3 blue">Status : <pre>Added to Execution Queue</pre></div><% } %>
+						<% if(command.status === 'sent') {%> <div class="col-md-3 blue">Status : <pre>Sent to Client</pre></div><% } %>
+						<% if(command.status === 0) {%> <div class="col-md-3 green">Status : <pre>Successfull</pre></div><% } %>
+						<% if(command.status === null) {%> <div class="col-md-3 green">Status : <pre>Successfull</pre></div><% } %>
+						<% if(command.status > 0) {%> <div class="col-md-3 red">Status : <pre>Failed</pre></div><% } %>
+              <div class="col-md-2">
+                <form action="/redo" method="post">
+                <input type="hidden" value="<%= command.id%>" name="id">
+                  <button type="submit" style="margin-top:20px;" class="btn btn-primary">Run Again</button>
+                </form>
+              </div>
+				  	</div>
+
+				  	<div class="row">
+            <% if(command.stdout && command.status != 'new') {  %>
+				  			<div class="col-md-12"><pre><%=command.stdout%></pre></div>
+            <% } %>
+            <% if(command.stderr && command.status > 0) {  %>
+				  			<div class="col-md-12"><pre><%=command.stderr%></pre></div>
+				  	<% } %>
+            	</div>
+				  	
+				<% })%>
+		 		<% if(commands.getAll().length === 0) { %>
+		 			No Commands to be executed
+				<% } %>
+
+				<hr>
+			</div>
+		</div>
+			
 		</div>
 	</body>
 </html>

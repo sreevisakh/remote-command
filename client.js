@@ -19,28 +19,38 @@ const spawn = childProcess.spawn;
 var commandStack = new stack();
 var commandRunning = false;
 const config = {
-  host: '127.0.0.1',
-  port: 9000
+  host: '127.0.0.1' || process.env.HOST,
+  port: 9000 || process.env.PORT,
+  protocol: 'http' || process.env.PROTOCOL,
+  timeout: 3000 || process.env.TIMEOUT,
+  pollingInterval: 3000 || process.env.INTERVAL,
+  uid: 0,
+  gid: 0,
+
+
 }
 
 var getCommands = function() {
-  console.log('Gettings Commands from server');
-  request(`http://${config.host}:${config.port}/commands`, function(error, response, data) {
+  console.log('GET /commands')
+  request(`http://${config.host}:${config.port}/commands`, function(error, response) {
     if (error) {
       console.error('Error while fetching commands');
       return;
     }
-    console.log('Got Comamnds', response.body)
-    JSON.parse(response.body).forEach(function(objCommand) {
-      console.log(objCommand.command)
-      commandStack.push(objCommand);
-      executeCommands();
+    data = JSON.parse(response.body);
+    if (data.length) {
+      console.log('Got Commands', data)
+      data.forEach(function(objCommand) {
+        console.log(objCommand.command)
+        commandStack.push(objCommand);
+        executeCommands();
 
-    })
+      })
+    }
   })
 }
 
-setInterval(getCommands, 3000);
+setInterval(getCommands, config.pollingInterval);
 
 
 var executeCommands = function() {
@@ -57,8 +67,10 @@ var executeCommands = function() {
       status;
     var program = newCommand.command.program;
     var args = newCommand.command.args.length ? newCommand.command.args : [];
-    const child = spawn(program, args);
+    const child = spawn(program, args, { uid: config.uid, gid: config.gid, timeout: config.timeout });
+    setTimeout(function() { child.kill() }, config.timeout)
     commandRunning = true;
+
     child.stdout.on('data', (data) => {
       console.log(`stdout: ${data}`);
       stdout += data;
@@ -75,15 +87,22 @@ var executeCommands = function() {
       updateCommandStatus(newCommand, status, stdout, stderr, function() {
         commandRunning = false;
       })
-
+    });
+    child.on('exit', (code) => {
+      console.log(`child process exited with code ${code}`);
+      status = code;
+      updateCommandStatus(newCommand, status, stdout, stderr, function() {
+        commandRunning = false;
+      })
     });
   }
 }
+
 var updateCommandStatus = (command, status, stdout, stderr, cb) => {
   console.log('Update Command Status')
   request({
     method: 'POST',
-    url: `http://${config.host}:${config.port}/update`,
+    url: `${config.protocol}://${config.host}:${config.port}/update`,
     json: {
       id: command.id,
       status: status,
