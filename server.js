@@ -13,6 +13,8 @@ var config = {
   port: process.env.$PORT || 9000
 }
 
+console.log(process.env)
+
 app.use(bodyParser.urlencoded({
   extended: true
 }));
