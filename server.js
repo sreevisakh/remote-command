@@ -19,7 +19,9 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 app.use(express.static(__dirname + '/'));
 
-app.listen(config.port)
+app.listen(config.port, function() {
+  console.log('Server listening on, config.port')
+})
 
 app.set('view engine', 'ejs');
 
