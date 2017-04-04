@@ -40,7 +40,7 @@
 			<div class="panel-body">
 				<% commands.getAll().forEach(function(command){%>
 					<div class="row">
-						<div class="col-md-7">Command: <pre><%=command.string%></pre></div>
+						<div class="col-md-7">Command: <pre><%=command.command%></pre></div>
 						<% if(command.status === 'new') {%> <div class="col-md-3 blue">Status : <pre>Added to Execution Queue</pre></div><% } %>
 						<% if(command.status === 'sent') {%> <div class="col-md-3 blue">Status : <pre>Sent to Client</pre></div><% } %>
 						<% if(command.status === 0) {%> <div class="col-md-3 green">Status : <pre>Successfull</pre></div><% } %>

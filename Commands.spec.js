@@ -35,5 +35,10 @@ describe('Commands', function() {
       assert.equal('cat', command[1].program);
       assert.equal('/etc/hosts', command[1].args[0]);
     });
+
+    it('shouldn\'t execute comments', function() {
+      var command = commands.processCommand('ls -l # comments');
+      assert.equal(1, command[0].args.length);
+    });
   });
 });

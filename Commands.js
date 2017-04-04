@@ -40,7 +40,6 @@ module.exports = function Commands() {
       let id = uuidV1();
       commands[id] = {
         id: id,
-        string: command,
         command: line,
         status: 'new',
         timeout: parseInt(timeout) || -1
@@ -51,12 +50,11 @@ module.exports = function Commands() {
   this.redo = function(id) {
     var objCommand = _.clone(this.find(id));
     let newId = uuidV1();
-    commands[id] = {
+    commands[newId] = {
       id: newId,
-      string: objCommand.string,
       command: objCommand.command,
       status: 'new',
-      timeout: parseInt(objComman.timeout) || -1
+      timeout: parseInt(objCommand.timeout) || -1
     }
   }
 
@@ -71,26 +69,34 @@ module.exports = function Commands() {
 
   this.processCommand = function(command) {
     log('Commands:processCommand')
+    command = command.replace(/\r/, '')
+
     var executionLines = [],
       lines = command.split('\n');
 
+
     lines = _.compact(lines);
     _.each(lines, function(line) {
-      executionLines.push(lineToArgument(line));
+      executionLines.push(line);
     })
     return executionLines;
   }
 
   function lineToArgument(command) {
-    log('Commands:lineToArgument')
-    var program = command.split(' ');
-    if (program.length === 1) {
-      return { program: program[0], args: [] }
-    } else {
-      return {
-        program: program[0],
-        args: program.slice(1)
-      };
-    }
+    // log('Commands:lineToArgument')
+    // if (command.indexOf('#') > -1) {
+    //   command = command.substr(0, command.indexOf('#'));
+    // }
+
+    // var program = command.split(' ');
+    // if (program.length === 1) {
+    //   return { program: program[0], args: [] }
+    // } else {
+    //   return {
+    //     program: program[0],
+    //     args: _.compact(program.slice(1))
+    //   };
+    // }
+    return command
   }
 }

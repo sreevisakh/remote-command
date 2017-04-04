@@ -1,23 +1,11 @@
 var request = require('request');
-var stack = require('./Stack');
+var Queue = require('./Queue');
 var childProcess = require("child_process");
-(function() {
 
-  var oldSpawn = childProcess.spawn;
+var commandQueue = new Queue();
 
-  function mySpawn() {
-    console.log('spawn called');
-    console.log(arguments);
-    var result = oldSpawn.apply(this, arguments);
-    return result;
-  }
-  childProcess.spawn = mySpawn;
-})();
-
-const spawn = childProcess.spawn;
-
-var commandStack = new stack();
 var commandRunning = false;
+
 const config = {
   host: '127.0.0.1' || process.env.HOST,
   port: 9000 || process.env.PORT,
@@ -26,8 +14,7 @@ const config = {
   pollingInterval: 3000 || process.env.INTERVAL,
   uid: 0,
   gid: 0,
-
-
+  id: 'DellLaptop'
 }
 
 var getCommands = function() {
@@ -37,17 +24,22 @@ var getCommands = function() {
       console.error('Error while fetching commands');
       return;
     }
-    data = JSON.parse(response.body);
+    try {
+      data = JSON.parse(response.body);
+    } catch (e) {
+      console.error('Unable to parse Response')
+      data = [];
+    }
+
     if (data.length) {
       console.log('Got Commands', data)
       data.forEach(function(objCommand) {
         console.log(objCommand.command)
-        commandStack.push(objCommand);
-        executeCommands();
-
+        commandQueue.enqueue(objCommand);
       })
     }
-  })
+  });
+  executeCommands();
 }
 
 setInterval(getCommands, config.pollingInterval);
@@ -59,41 +51,17 @@ var executeCommands = function() {
     return;
   }
 
-  var newCommand = commandStack.pop();
+  var newCommand = commandQueue.dequeue();
   if (newCommand) {
 
     var stdout = '',
       stderr = '',
       status;
-    var program = newCommand.command.program;
-    var args = newCommand.command.args.length ? newCommand.command.args : [];
-    const child = spawn(program, args, { uid: config.uid, gid: config.gid, timeout: config.timeout });
-    setTimeout(function() { child.kill() }, config.timeout)
     commandRunning = true;
-
-    child.stdout.on('data', (data) => {
-      console.log(`stdout: ${data}`);
-      stdout += data;
-    });
-
-    child.stderr.on('data', (data) => {
-      console.log(`stderr: ${data}`);
-      stderr += data;
-    });
-
-    child.on('close', (code) => {
-      console.log(`child process exited with code ${code}`);
-      status = code;
-      updateCommandStatus(newCommand, status, stdout, stderr, function() {
+    var child = childProcess.exec(newCommand.command, function(error, stdout, stderr) {
+      updateCommandStatus(newCommand, child.exitCode, stdout, stderr, function() {
         commandRunning = false;
-      })
-    });
-    child.on('exit', (code) => {
-      console.log(`child process exited with code ${code}`);
-      status = code;
-      updateCommandStatus(newCommand, status, stdout, stderr, function() {
-        commandRunning = false;
-      })
+      });
     });
   }
 }
