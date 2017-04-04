@@ -10,7 +10,7 @@ var Commands = require('./Commands');
 var app = express();
 var commands = new Commands();
 var config = {
-  port: 9000 || process.env.$PORT
+  port: process.env.$PORT || 9000
 }
 
 app.use(bodyParser.urlencoded({
