@@ -10,7 +10,7 @@ var Commands = require('./Commands');
 var app = express();
 var commands = new Commands();
 var config = {
-  port: process.env.$PORT || 9000
+  port: process.env.PORT || 9000
 }
 
 console.log(process.env)
