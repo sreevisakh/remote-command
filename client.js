@@ -7,14 +7,14 @@ var commandQueue = new Queue();
 var commandRunning = false;
 
 const config = {
-  host: '127.0.0.1' || process.env.HOST,
-  port: 9000 || process.env.PORT,
-  protocol: 'http' || process.env.PROTOCOL,
-  timeout: 3000 || process.env.TIMEOUT,
-  pollingInterval: 3000 || process.env.INTERVAL,
+  host: process.env.HOST || '127.0.0.1',
+  port: process.env.PORT || 9000,
+  protocol: process.env.PROTOCOL || 'http',
+  timeout: process.env.TIMEOUT || 3000,
+  pollingInterval: process.env.INTERVAL || 3000,
   uid: 0,
   gid: 0,
-  id: 'DellLaptop'
+  id: process.env.id || 'DellLaptop'
 }
 
 var getCommands = function() {
