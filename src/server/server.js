@@ -11,13 +11,13 @@ var io = require('socket.io')(server);
 var globalSocket;
 
 
-io.on('connection', function (socket) {
+io.on('connection', (socket) => {
   globalSocket = socket;
   log(chalk.green('Client connected'));
   emitCommands();
 
-  socket.on('update', function (data) {
-    console.log('Incoming Update');
+  socket.on('update', (data) => {
+    log('Incoming Update');
     commands.update(data);
   });
 });
@@ -33,8 +33,8 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 app.use(express.static(__dirname + '/../public'));
 
-server.listen(config.port, function() {
-  console.log('Server listening on', config.port)
+server.listen(config.port, () => {
+  log('Server listening on', config.port)
 })
 
 app.set('view engine', 'ejs');
