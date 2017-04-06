@@ -21,11 +21,11 @@ const config = {
 
 var socket = io(`http://${config.host}:${config.port}`);
 log('Connecting to server');
-socket.on('connect', function(server){
-  log('Connected to server');
-
+socket.on('connect', function(){
+  log(`Connected to server: host: ${socket.io.opts.hostname}, port: ${socket.io.opts.port}`);
+  console.log()
   socket.on('commands',function(data){
-    log('Got Commands from server');
+    log('Got Commands from server', data);
     data.forEach(function(objCommand) {
       log(objCommand.command);
       commandQueue.enqueue(objCommand);
@@ -70,12 +70,13 @@ var executeCommands = function() {
 
   var newCommand = commandQueue.dequeue();
   if (newCommand) {
-
+  log('Executing' + newCommand);
     var stdout = '',
       stderr = '',
       status;
     commandRunning = true;
     var child = childProcess.exec(newCommand.command, function(error, stdout, stderr) {
+      log('Send Update to server');
       updateCommandStatus(newCommand, child.exitCode, stdout, stderr, function() {
         commandRunning = false;
       });
@@ -106,4 +107,5 @@ var updateCommandStatus = (command, status, stdout, stderr, cb) => {
       stdout: stdout,
       stderr: stderr
     });
+    cb();
 }
