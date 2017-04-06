@@ -5,7 +5,7 @@
   "main": "lib/server/server.js",
   "scripts": {
     "start": "node lib/server/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"Error: no test specified\" && exit 0",
     "build": "cd src && babel **/*.js --out-dir ../lib/ --sourcemaps",
     "watch": "cd src && babel --watch **/*.js --out-dir ../lib/ --sourcemaps"
   },
