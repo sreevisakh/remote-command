@@ -2,8 +2,9 @@
   "name": "remote-command",
   "version": "1.0.0",
   "description": "",
-  "main": "server/server.js",
+  "main": "lib/server/server.js",
   "scripts": {
+
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "cd src && babel **/*.js --out-dir ../lib/ --sourcemaps",
     "watch": "cd src && babel --watch **/*.js --out-dir ../lib/ --sourcemaps"
