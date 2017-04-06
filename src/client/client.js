@@ -3,6 +3,7 @@ var Queue = require('../models/Queue');
 var childProcess = require("child_process");
 var log = require('../common/utils').log;
 var io = require('socket.io-client');
+var chalk = require('chalk');
 
 var commandQueue = new Queue();
 var commandRunning = false;
