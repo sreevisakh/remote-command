@@ -33,34 +33,6 @@ socket.on('connect', function(){
     executeCommands();
   });
 });
-//
-// var getCommands = function() {
-//   console.log('GET /commands')
-//   request(`http://${config.host}:${config.port}/commands`, function(error, response) {
-//     if (error) {
-//       console.error('Error while fetching commands');
-//       return;
-//     }
-//     try {
-//       data = JSON.parse(response.body);
-//     } catch (e) {
-//       console.error('Unable to parse Response')
-//       data = [];
-//     }
-//
-//     if (data.length) {
-//       console.log('Got Commands', data)
-//       data.forEach(function(objCommand) {
-//         console.log(objCommand.command)
-//         commandQueue.enqueue(objCommand);
-//       })
-//     }
-//   });
-//   executeCommands();
-// }
-
-// setInterval(getCommands, config.pollingInterval);
-//
 
 var executeCommands = function() {
   log('Running executeCommand')
@@ -70,7 +42,7 @@ var executeCommands = function() {
 
   var newCommand = commandQueue.dequeue();
   if (newCommand) {
-  log('Executing' + newCommand);
+  log(chalk.green('Executing' + newCommand.command));
     var stdout = '',
       stderr = '',
       status;
@@ -86,21 +58,6 @@ var executeCommands = function() {
 
 var updateCommandStatus = (command, status, stdout, stderr, cb) => {
   log('Updating Command Status');
-  // request({
-  //   method: 'POST',
-  //   url: `${config.protocol}://${config.host}:${config.port}/update`,
-  //   json: {
-  //     id: command.id,
-  //     status: status,
-  //     stdout: stdout,
-  //     stderr: stderr
-  //   }
-  // }, function(error, response) {
-  //   if (error) {
-  //     console.log('Unable to update command status', error)
-  //   }
-  //   cb();
-  // })
   socket.emit('update',
     { id: command.id,
       status: status,
