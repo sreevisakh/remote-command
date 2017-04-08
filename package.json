@@ -6,8 +6,9 @@
   "scripts": {
     "start": "node lib/server/server.js",
     "test": "echo \"Error: no test specified\" && exit 0",
-    "build": "cd src && babel **/*.js --out-dir ../lib/ --sourcemaps",
-    "watch": "cd src && babel --watch **/*.js --out-dir ../lib/ --sourcemaps"
+    "build": "npm run copy && cd src && babel **/*.js --out-dir ../lib/ --sourcemaps",
+    "watch": "npm run copy && cd src && babel --watch **/*.js --out-dir ../lib/ --sourcemaps",
+    "copy" : "cd src &&  cp -r public ../lib/public"
   },
   "author": "",
   "license": "ISC",

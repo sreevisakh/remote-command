@@ -11,15 +11,23 @@ var io = require('socket.io')(server);
 var globalSocket;
 
 
-io.on('connection', (socket) => {
+io.on('connection', function(socket) {
   globalSocket = socket;
   log(chalk.green('Client connected'));
   emitCommands();
 
-  socket.on('update', (data) => {
-    log('Incoming Update');
+  socket.on('update', function(data) {
+    log('WS Update');
     commands.update(data);
+    socket.emit('update', JSON.stringify(data))
   });
+  socket.on('add', function(command) {
+    addCommand(command);
+  });
+
+  socket.on('join', function(d){
+    socket.join(d.channel);
+  })
 });
 
 var commands = new Commands();
@@ -39,8 +47,13 @@ server.listen(config.port, () => {
 
 app.set('view engine', 'ejs');
 
+
+
 app.get('/', function(req, res) {
   res.render(__dirname + '/../public/index.ejs', { commands: commands });
+});
+app.get('/home', function(req, res) {
+  res.render(__dirname + '/../public/commands.ejs',  { commands: commands });
 });
 
 app.get('/commands', function(req, res) {
@@ -49,9 +62,7 @@ app.get('/commands', function(req, res) {
 });
 
 app.post('/add', function(req, res) {
-  log(chalk.blue('POST /add'));
-  commands.addToQueue(req.body.command);
-  emitCommands();
+  addCommand(req.body.command);
   res.redirect('/');
 });
 
@@ -72,6 +83,14 @@ app.post('/update', function(req, res) {
 var emitCommands = function(){
   if(globalSocket){
     log(chalk.blue('Sending Commands'));
+    console.log(commands.getAll())
     globalSocket.emit('commands', commands.get());
   }
+}
+
+var addCommand = function(command){
+  log(chalk.blue('/add'));
+  log(JSON.stringify(command));
+  commands.addToQueue(command);
+  emitCommands();
 }

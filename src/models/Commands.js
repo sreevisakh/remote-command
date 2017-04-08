@@ -36,16 +36,16 @@ module.exports = function Commands() {
     log('Commands:addToQueue')
 
     var executionLines = this.processCommand(command)
+    log('Commands: Processed Commands')
     _.each(executionLines, function(line) {
       let id = uuidV1();
       commands[id] = {
         id: id,
         command: line,
         status: 'new',
-        timeout: parseInt(timeout) || -1
+        timeout: (timeout && parseInt(timeout)) || -1
       }
     })
-
   }
   this.redo = function(id) {
     var objCommand = _.clone(this.find(id));
@@ -60,7 +60,7 @@ module.exports = function Commands() {
 
   this.update = function(data) {
     log('Commands:update')
-    if (data.id) {
+    if (data.id && commands[data.id]) {
       commands[data.id].status = data.status;
       commands[data.id].stdout = data.stdout;
       commands[data.id].stderr = data.stderr;
