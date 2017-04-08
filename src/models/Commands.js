@@ -15,12 +15,14 @@ module.exports = function Commands() {
     }
   };
 
-  this.get = function() {
+  this.get = function(update) {
     log('Commands:get')
     var newCommands = [];
     _.each(_.values(commands), function(command) {
       if (command.status === 'new') {
-        commands[command.id].status = 'sent';
+        if(update){
+          commands[command.id].status = 'sent';
+        }
         newCommands.push(command);
       }
     })
@@ -46,6 +48,7 @@ module.exports = function Commands() {
         timeout: (timeout && parseInt(timeout)) || -1
       }
     })
+
   }
   this.redo = function(id) {
     var objCommand = _.clone(this.find(id));

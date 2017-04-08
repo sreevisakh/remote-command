@@ -10,23 +10,29 @@ var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var globalSocket;
 
-
+var numOfClients = 0;
 io.on('connection', function(socket) {
+  ++numOfClients;
   globalSocket = socket;
-  log(chalk.green('Client connected'));
-  emitCommands();
+  log(chalk.green('Client connected', numOfClients));
+  if(commands.get().length){
+    emitCommands();
+  }
 
   socket.on('update', function(data) {
     log('WS Update');
     commands.update(data);
+    socket.broadcast.emit('update', JSON.stringify(data))
     socket.emit('update', JSON.stringify(data))
   });
   socket.on('add', function(command) {
-    addCommand(command);
+    log(chalk.blue('WS add'));
+    commands.addToQueue(command);
+    emitCommands();
   });
 
-  socket.on('join', function(d){
-    socket.join(d.channel);
+  socket.on('disconnect', function(){
+    numOfClients--;
   })
 });
 
@@ -47,12 +53,10 @@ server.listen(config.port, () => {
 
 app.set('view engine', 'ejs');
 
-
-
-app.get('/', function(req, res) {
+app.get('/admin', function(req, res) {
   res.render(__dirname + '/../public/index.ejs', { commands: commands });
 });
-app.get('/home', function(req, res) {
+app.get('/', function(req, res) {
   res.render(__dirname + '/../public/commands.ejs',  { commands: commands });
 });
 
@@ -62,7 +66,10 @@ app.get('/commands', function(req, res) {
 });
 
 app.post('/add', function(req, res) {
-  addCommand(req.body.command);
+  log(chalk.blue('POST /add'));
+  log(req.body.command);
+  commands.addToQueue(req.body.command);
+  emitCommands();
   res.redirect('/');
 });
 
@@ -83,14 +90,7 @@ app.post('/update', function(req, res) {
 var emitCommands = function(){
   if(globalSocket){
     log(chalk.blue('Sending Commands'));
-    console.log(commands.getAll())
+    globalSocket.broadcast.emit('newcommands', commands.get(true));
     globalSocket.emit('commands', commands.get());
   }
-}
-
-var addCommand = function(command){
-  log(chalk.blue('/add'));
-  log(JSON.stringify(command));
-  commands.addToQueue(command);
-  emitCommands();
 }
