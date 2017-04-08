@@ -55,7 +55,7 @@ app.use(bodyParser.urlencoded({
 passport.use(new GoogleStrategy({
     clientID:     process.env.clientId,
     clientSecret: process.env.secret,
-    callbackURL: "http://localhost:9000/auth/callback",
+    callbackURL: "http://remote-command.herokuapp.com/auth/callback",
     passReqToCallback   : true
   },
   function(request, accessToken, refreshToken, profile, done) {
