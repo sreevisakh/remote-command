@@ -8,6 +8,8 @@ var Commands = require('../models/Commands');
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
+
+
 var globalSocket;
 
 var numOfClients = 0;
@@ -91,6 +93,6 @@ var emitCommands = function(){
   if(globalSocket){
     log(chalk.blue('Sending Commands'));
     globalSocket.broadcast.emit('newcommands', commands.get(true));
-    globalSocket.emit('commands', commands.get());
+    globalSocket.emit('commands', commands.getAll());
   }
 }
