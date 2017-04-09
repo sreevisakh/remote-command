@@ -50,7 +50,6 @@ module.exports = function Commands() {
         timeout: (timeout && parseInt(timeout)) || -1
       }
     })
-
   }
   this.redo = function(id) {
     var objCommand = _.clone(this.find(id));
