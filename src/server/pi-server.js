@@ -5,13 +5,13 @@ var chalk = require('chalk');
 var log = require('../common/utils').log;
 var _ = require('lodash');
 var Commands = require('../models/Commands');
+var childProcess = require("child_process");
 
 //config Section
 
 var config = {
   port: process.env.PORT || 9000
 };
-
 
 
 //express Section
@@ -37,42 +37,55 @@ app.get('/', function (req, res) {
 });
 
 app.post('/add', function (req, res) {
-  log(chalk.blue('POST /add'));
-  log(req.body.command);
+  log(chalk.blue('Request received to add command'));
+  log(chalk.blue('Adding Command'));
   commands.addToQueue(req.body.command);
-  executeCommand();
-  res.redirect('/');
+  log('Starting execution of commands')
+  executeCommand(function(response){
+    res.send(response);  
+  });
+  
 });
 
 app.listen(config.port, () => {
-  log('Server listening on', config.port);
+  log('Server listening on ', config.port);
 });
 
 
 //Functiontions
 
 var commands = new Commands();
+var commandRunning = false;
 
-var executeCommands = function() {
-  log('Running executeCommand')
+
+var executeCommand = function(callback) {
+  log('Executing Commands')
   if (commandRunning) {
+    log(chalk.red('Already somebody is getting executed, I can\'t watch this, returning'));
     return;
   }
-  var newCommand = commandQueue.dequeue();
+  
+  var newCommand = commands.next();
   if (newCommand) {
-  log(chalk.green('Executing' + newCommand.command));
+  log('Got next command');  
+  log(chalk.green('Executing: ' + newCommand.command));
     var stdout = '',
       stderr = '',
       status;
     commandRunning = true;
     var child = childProcess.exec(newCommand.command, function(error, stdout, stderr) {
-      log('Send Update to server');
-      commands.update(  { id: command.id,
+      var update = { 
+          id: newCommand.id,
           status:  child.exitCode,
           stdout: stdout,
           stderr: stderr
-        })
+        }
       commandRunning = false;
+      callback(update);
+      log(chalk.green('Command Execution finished'));
     });
+  }
+  else{
+    callback(chalk.red("No Commands to Execute"));
   }
 }
